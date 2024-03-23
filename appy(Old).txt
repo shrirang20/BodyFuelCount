@@ -1,0 +1,142 @@
+import streamlit as st 
+import google.generativeai as genai
+import os 
+from dotenv import load_dotenv
+load_dotenv()
+from PIL import Image
+
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+def get_gemini_response(input_prompt, image):
+    model = genai.GenerativeModel('gemini-pro-vision')
+    response = model.generate_content([input_prompt,image[0]])
+    return response.text
+
+def input_image_setup(uploaded_file):
+    if uploaded_file is not None:
+        bytes_data = uploaded_file.getvalue()
+        # print("BYTE_DATA:", byte_data)
+
+        image_parts = [
+            {
+                "mime_type": uploaded_file.type,
+                "data": bytes_data
+            }
+        ]
+
+        return image_parts
+    else:
+        return FileNotFoundError("No Image Found")
+    
+
+#initializing frontend
+    
+st.set_page_config(page_title="Calory App")
+
+st.header("Calory App")
+
+name = st.text_input("You Name:", key="Name")
+gender = st.selectbox("Gender:", ('Male', 'Female'), index=None, placeholder="Gender")
+age = st.slider(label="Age", min_value= 5, max_value= 120, value=18, step=1)
+height = st.slider(label="height (in cms)", min_value= 130, max_value= 260, value=150, step=1)
+weight = st.slider(label="height (in KGs)", min_value= 30, max_value= 300, value=50, step=1)
+activity_option = ["Gym", "Yoga", "Cycling" , "Running", "Other activities", "Inactive"]
+activity = st.multiselect("Activities:", options=activity_option)
+duration = st.slider(label="Duration of activity (in hrs)", min_value= 0.0, max_value= 12.0, value=1.0, step=0.5)
+
+if name and age and gender and height and weight and activity and duration:
+    st.write("Hello,", name ,"!")
+    st.write("You are a,", gender ,"!", "and you age is", age )
+    st.write("You Height is:", height , "and Weight is:", weight)
+    st.write("You do", activity , "for", duration , "hours")
+else:
+    st.write("Please fill you name, height, weight, age, gender, activity")
+
+
+options = ["None","Diabetes Type 1", "Diabetes Type 2", "High Blood Pressure", "Low Blood Pressure", "High Uric Acid", "Non Alchoholic Fatty Liver", 
+           "High cholesterol", "High Tryglycerides","Asthama", "Arthritis" ]
+selected=st.multiselect("Do you have any of the below problems?", options=options)
+if selected:
+    st.write("You have the following Diseases:", selected)
+else:
+    st.write("Please select all the diseases you have, else select None")
+# if selected:
+#     disease_list = []
+#     for diseases in range(len(selected)):
+#         disease_list.append(selected[diseases])
+#         st.write("TEST1:", diseases)
+#     st.write("You have", disease_list,"selected:",selected)
+#     print("LIST:", disease_list)
+
+uploaded_file = st.file_uploader("Choose Image to Upload:", type=['jpg','jpeg','png'])
+image=""
+if uploaded_file is not None:
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_column_width=True)
+
+submit = st.button("Analyse my food!")
+
+input_prompt = f"""You are an expert nutritionist and you have a client named { name } where that client have following health issues { selected }, 
+your client has height = { height } , weight = { weight } , age = { age } , gender = { gender } , activity history = { activity } 
+and the client do the activited for {duration} hours,
+you need to see the food items from the image uploaded by your client and calculate the BMI and the total calories,
+also provide the details of every food items with calories intake in below format
+
+1. Item 1 - no of calories
+2. Item 2 - no of calories
+-----
+-----
+
+Next you can also mention whether the food is healthy or not according to your client's BMI, health conditions and total calories 
+consumed (mentioned in the image) and also mention the percentage split of the ratio of carbohydrates, fats, fibers, sugar abd other important 
+things required in out diet
+
+Finally tell me the right amount to consume in following format,right combination of food to consume from the given photo.
+Right amount to consume:
+1. Item 1 - no to consume
+2. Item 2 - no to consume
+-----
+-----
+
+Right Combination:
+1. Item 1 and Item 3 .... - no to consume
+2. Item 4 and Item 5 .... - no to consume
+-----
+-----
+
+"""
+
+if submit:
+    if image:
+        image_data=input_image_setup(uploaded_file)
+        response=get_gemini_response(input_prompt,image_data)
+        st.header("The Response is")
+        st.write(response)
+    else:
+        st.error("Please Upload file before submitting")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Total Calories Consume = (Quantity of Item 1)*(calories of Item 1) + 
+    (Quantity of Item 2)*(calories of Item 2) + 
+    (Quantity of Item 3)*(calories of Item 3) + 
+
+
+ 1. Item 1 - no of calories
+    2. Item 2 - no of calories
+    -----
+    -----
+    n. Item n - no of calories
