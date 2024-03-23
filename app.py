@@ -72,7 +72,7 @@ you need to see the food items from the image uploaded by your client and answer
     
     Total Calories Consume = Σ(quantity_i * calories_per_unit_i) for all food items i (1 to n)
     .......
-    
+      
     Total Calories Consume
 
 3. Total Calories Left
