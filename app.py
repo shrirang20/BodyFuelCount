@@ -30,8 +30,8 @@ def input_image_setup(uploaded_file):
     
 
 #initializing frontend
-    
-st.set_page_config(page_title="Calory App")
+#st.set_page_config(page_title="Pdf Chatbot", layout="wide",page_icon='🤸🏽')
+st.set_page_config(page_title="Calory App", layout="wide",page_icon='🤸🏽')
 
 st.header("Calory App")
 
